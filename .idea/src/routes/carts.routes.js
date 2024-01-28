@@ -1,5 +1,7 @@
 const { Router } = require("express");
 const ProductManager = require("../ProductManager");
+const CartManager = require("../CartManager");
+const Carrito = require("../Cart");
 
 const router = Router();
 
@@ -14,7 +16,7 @@ const inicializarManagerProduct = async () => {
 
 const inicializarManagerCarrito = async () => {
     try {
-        const manager = new ProductManager("C:/Users/manum/ideaProjects/PrimeraEntrega_MercadoEmanuel/.idea/carritos.json");
+        const manager = new CartManager("C:/Users/manum/ideaProjects/PrimeraEntrega_MercadoEmanuel/.idea/carts.json");
         return manager;
     } catch (error) {
         console.log("-app - inicializarManager", error);
@@ -22,12 +24,13 @@ const inicializarManagerCarrito = async () => {
 }
 
 const startRouter = async () => {
+
     const managerProducts = await inicializarManagerProduct();
     const managerCarts = await inicializarManagerCarrito();
-
     router.get('/', async (req, res) => {
         try{
             const resul = await managerCarts.getCarritos();
+            console.lgo(resul);
             if(resul == null) {
                 res.send("No hay carritos");
             }else{
@@ -51,17 +54,17 @@ const startRouter = async () => {
     router.post('/', async (req, res) => {
         try{
             const body = req.body;
-            if(!body.id  && !body.products){
+            if(!body.products){
                 console.log("Faltan propiedades del carrito");
                 return null;
             }else{
                 let arrayProducts = [];
-                JSON.parse(body.products).map((p) => {
-                    let product =  [p.id,p.quantity];
-                    arrayProducts.push(product);
+                body.products.map((p) => {
+                    arrayProducts.push(p);
                 });
-                const id = parseInt(body.id);
-                const carrito = new Carrito(id, arrayProducts);
+                const carrito = new Carrito(arrayProducts);
+                carrito.setId(CartManager.contador++);
+                console.log(managerCarts.contador++);
                 await managerCarts.addCarrito(carrito);
                 return res.json(carrito);
             }
@@ -72,27 +75,30 @@ const startRouter = async () => {
     //TODO
     router.post('/:id/productos/:id_producto', async (req, res) => {
         try {
+            console.log("entro");
             const id = parseInt(req.params.id);
+            console.log(id);
             const id_producto = parseInt(req.params.id_producto);
+            console.log(id_producto);
+
             const carrito = await managerCarts.getCarritoById(id);
-            const product = await managerProducts.getProductById(id_producto);
-            if (carrito !== null && product !== null) {
-                if (await carrito.existeProducto(id_producto)) {
-                    await carrito.addProduct(id_producto, 1);
-                    return res.json(carrito);
-                } else {
-                    await carrito.addProduct(id_producto, 1);
-                    return res.json(carrito);
-                }
+
+            console.log(carrito);
+            if (!managerCarts.carts[id]) {
+                carrito.products.map((p) => {
+                    if (p.id === id_producto) {
+                        p.quantity++;
+                    }
+                });
             } else {
                 console.log("El carrito o el producto no existen");
                 return null;
             }
         }catch{
-            return res.status(400).send("Error - addProductCart");
+            return res.status(400).send("Error - addProductCarts");
         }
     });
 }
-
 startRouter();
+
 module.exports = router;

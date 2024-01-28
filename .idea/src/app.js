@@ -1,6 +1,4 @@
 const express = require("express");
-const ProductManager = require("./ProductManager");
-const Product = require("./Product");
 const productsRoutes = require("./routes/products.routes");
 const cartsRoutes = require("./routes/carts.routes");
 const API_BASE_PATH = '/api';
@@ -18,6 +16,5 @@ const startServer = async () => {
     app.listen(PORT, () => {
         console.log(`Server running on port ${PORT}`);
     });
-
 }
 startServer();

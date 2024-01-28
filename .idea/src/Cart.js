@@ -21,7 +21,7 @@ class Cart{
         this.products = products;
     }
     async vaciarCarrito(){
-        await this.products = [];
+        this.products = [];
         return this.products;
     }
     async existeProducto(id){
@@ -29,16 +29,16 @@ class Cart{
     }
     async addProduct(id,quantity){
         if(existeProducto(id)) {
-            await this.products[id].quantity += quantity;
+            this.products[id].quantity += quantity;
         }else{
-            await this.products.push({id,quantity});
+            this.products.push({id,quantity});
         }
     }
     async removeProduct(id){
         await this.products.splice(id,1);
     }
     async removeProductQuantiy(id,quantity){
-        await this.products[id].quantity -= quantity;
+        this.products[id].quantity -= quantity;
     }
 }
 module.exports = Cart;

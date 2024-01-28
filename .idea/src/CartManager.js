@@ -1,5 +1,5 @@
-const fs = require("fs");
-const Cart = require("./Cart");
+const fs = require("fs").promises;
+const Cart = require("../src/Cart");
 
 class CartManager {
     static contador = 0;
@@ -15,9 +15,9 @@ class CartManager {
 
     async addCarrito(carrito) {
         try{
-            if(validarCarrito(carrito)){
-                carrito.setId(CartManager.contador++);
+            if(this.validarCarrito(carrito)){
                 this.carts.push(carrito);
+                console.log(this.carts);
                 await fs.writeFile(this.path, JSON.stringify(this.carts));
                 return carrito;
             }else{
@@ -32,6 +32,7 @@ class CartManager {
         try{
             let jsonData;
             await fs.readFile(this.path, "utf-8").then((data) => {
+
                 if (data === undefined || data === null || data === "") {
                     jsonData = undefined;
                 } else {
@@ -42,17 +43,17 @@ class CartManager {
                 this.carts = [];
             } else {
                 jsonData.map((c) => {
-                    let cart = new Cart(c.products);
+                    let cart = new Cart(c);
+                    cart.setId(CartManager.contador++);
                     if (this.validarCarrito(cart)) {
-                        cart.setId(CartManager.contador++);
                         this.carts.push(cart);
                     } else {
                         console.log("El carrito ya existe");
                     }
                 });
             }
-            return this.carts;
-        }catch (error){
+            console.log(this.carts);
+        } catch (error) {
             console.log("-cartmanager - setCarts", error);
             return null;
         }
@@ -70,7 +71,7 @@ class CartManager {
     }
     async getCarritoById(id){
         try{
-            const carrito = await this.carts.find((c) => c.id === id);
+            const carrito = this.carts.find((c) => c.id === id);
             if(!carrito){
                 console.log("El carrito no existe");
                 return null;
